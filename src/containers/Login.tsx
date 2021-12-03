@@ -5,10 +5,13 @@ import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { performLogin, selectIsAuthBusy, selectIsLoggedIn } from "../features/auth/authSlice";
 import LoaderButton from "../components/LoaderButton";
 import { Navigate } from "react-router-dom";
+import { useFormFields } from "../lib/hooksLib";
 
 const Login = () => {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [fields, handleFieldChange] = useFormFields({
+        email: "",
+        password: ""
+    });
     const [isAutoFilled, setAutoFilled] = useState(false);
     const dispatch = useAppDispatch();
     const isAuthBusy = useAppSelector(selectIsAuthBusy);
@@ -17,22 +20,20 @@ const Login = () => {
     const passwordRef = createRef<HTMLInputElement>();
 
     const validateForm = () => {
-        return isAutoFilled || (email.length > 0 && password.length > 0);
+        return isAutoFilled || (fields.email.length > 0 && fields.password.length > 0);
     };
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        dispatch(performLogin({ email, password }));
+        dispatch(performLogin({
+            email: fields.email,
+            password: fields.password,
+        }));
     };
 
-    const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setEmail(e.target.value);
-        setAutoFilled(false);
-    };
-
-    const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setPassword(e.target.value);
+    const handleFieldChangeWithAutoFilled = (e: ChangeEvent<HTMLInputElement>) => {
+        handleFieldChange(e);
         setAutoFilled(false);
     };
 
@@ -56,20 +57,20 @@ const Login = () => {
                         autoFocus
                         type="email"
                         size="lg"
-                        value={email}
-                        onChange={handleEmailChange}
+                        value={fields.email}
+                        onChange={handleFieldChangeWithAutoFilled}
                         disabled={isAuthBusy}
                     />
                 </Form.Group>
                 <div className="d-grid gap-2 py-3">
-                    <Form.Group>
+                    <Form.Group controlId="password">
                         <Form.Label>Password</Form.Label>
                         <Form.Control
                             ref={passwordRef}
                             type="password"
                             size="lg"
-                            value={password}
-                            onChange={handlePasswordChange}
+                            value={fields.password}
+                            onChange={handleFieldChangeWithAutoFilled}
                             disabled={isAuthBusy}
                         />
                     </Form.Group>

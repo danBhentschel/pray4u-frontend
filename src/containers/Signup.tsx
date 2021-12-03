@@ -1,11 +1,14 @@
+import { Auth } from "aws-amplify";
 import { ChangeEvent, useState } from "react";
 import Form from "react-bootstrap/Form";
-import { useNavigate } from "react-router-dom";
-import { useAppSelector } from "../app/hooks";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
 import LoaderButton from "../components/LoaderButton";
-import { selectIsLoggedIn } from "../features/auth/authSlice";
+import { performLogin, selectIsAuthBusy, selectIsLoggedIn } from "../features/auth/authSlice";
+import { onError } from "../lib/errorLib";
 import { useFormFields } from "../lib/hooksLib";
+import { ISignUpResult } from "amazon-cognito-identity-js";
 import "./Signup.css";
+import { Navigate } from "react-router-dom";
 
 const Signup = () => {
     const [fields, handleFieldChange] = useFormFields({
@@ -14,12 +17,13 @@ const Signup = () => {
         confirmPassword: "",
         confirmationCode: "",
     });
-    const navigate = useNavigate();
-    const [newUser, setNewUser] = useState(null as string | null);
-    const isLoggedIn = useAppSelector(selectIsLoggedIn);
+    const [newUser, setNewUser] = useState(null as ISignUpResult | null);
     const [isLoading, setIsLoading] = useState(false);
+    const dispatch = useAppDispatch();
+    const isAuthBusy = useAppSelector(selectIsAuthBusy);
+    const isLoggedIn = useAppSelector(selectIsLoggedIn);
 
-    function validateForm() {
+    const validateForm = () => {
         return (
             fields.email.length > 0 &&
             fields.password.length > 0 &&
@@ -27,27 +31,46 @@ const Signup = () => {
         );
     }
 
-    function validateConfirmationForm() {
+    const validateConfirmationForm = () => {
         return fields.confirmationCode.length > 0;
     }
 
-    async function handleSubmit(event: ChangeEvent<HTMLFormElement>) {
+    const handleSubmit = async (event: ChangeEvent<HTMLFormElement>) => {
         event.preventDefault();
 
         setIsLoading(true);
 
-        setNewUser("test");
-
-        setIsLoading(false);
+        try {
+            const newUser = await Auth.signUp({
+                username: fields.email,
+                password: fields.password
+            });
+            setIsLoading(false);
+            setNewUser(newUser);
+        } catch (e) {
+            onError(e);
+            setIsLoading(false);
+        }
     }
 
-    async function handleConfirmationSubmit(event: ChangeEvent<HTMLFormElement>) {
+    const handleConfirmationSubmit = async (event: ChangeEvent<HTMLFormElement>) => {
         event.preventDefault();
 
         setIsLoading(true);
+
+        try {
+            await Auth.confirmSignUp(fields.email, fields.confirmationCode);
+            dispatch(performLogin({
+                email: fields.email,
+                password: fields.password,
+            }));
+        } catch (e) {
+            onError(e);
+            setIsLoading(false);
+        }
     }
 
-    function renderConfirmationForm() {
+    const renderConfirmationForm = () => {
         return (
             <Form onSubmit={handleConfirmationSubmit}>
                 <Form.Group controlId="confirmationCode">
@@ -66,7 +89,7 @@ const Signup = () => {
                         size="lg"
                         type="submit"
                         variant="success"
-                        isLoading={isLoading}
+                        isLoading={isLoading || isAuthBusy}
                         disabled={!validateConfirmationForm()}
                     >
                         Verify
@@ -76,7 +99,7 @@ const Signup = () => {
         );
     }
 
-    function renderForm() {
+    const renderForm = () => {
         return (
             <Form onSubmit={handleSubmit}>
                 <Form.Group controlId="email">
@@ -120,6 +143,10 @@ const Signup = () => {
                 </div>
             </Form>
         );
+    }
+
+    if (isLoggedIn) {
+        return <Navigate to='/' />;
     }
 
     return (
