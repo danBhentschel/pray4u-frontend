@@ -22,7 +22,7 @@ const App = () => {
   }
 
   useEffect(() => {
-    (async () => {
+    const tryGetAuthFromSession = async () => {
       try {
         await Auth.currentSession();
         dispatch(setLoggedIn());
@@ -32,8 +32,12 @@ const App = () => {
         }
         dispatch(logout());
       }
-    })();
-  }, [dispatch]);
+    };
+
+    if (!isAuthKnown) {
+      tryGetAuthFromSession();
+    }
+  }, [dispatch, isAuthKnown]);
 
   if (!isLoggedIn && location.pathname !== '/signup' && location.pathname !== '/login') {
     return <Navigate to='/login' />;
