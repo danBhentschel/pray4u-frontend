@@ -1,10 +1,10 @@
 import { useState, useEffect, FormEvent, createRef, ChangeEvent, RefObject } from "react";
 import Form from "react-bootstrap/Form";
-import Button from "react-bootstrap/Button";
 import "./Login.css";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { performLogin, selectIsAuthBusy, selectIsLoggedIn } from "../features/auth/authSlice";
-import { useNavigate } from "react-router-dom";
+import LoaderButton from "../components/LoaderButton";
+import { Navigate } from "react-router-dom";
 
 const Login = () => {
     const [email, setEmail] = useState("");
@@ -15,7 +15,6 @@ const Login = () => {
     const isLoggedIn = useAppSelector(selectIsLoggedIn);
     const emailRef = createRef<HTMLInputElement>();
     const passwordRef = createRef<HTMLInputElement>();
-    const navigate = useNavigate();
 
     const validateForm = () => {
         return isAutoFilled || (email.length > 0 && password.length > 0);
@@ -43,12 +42,9 @@ const Login = () => {
         setTimeout(() => setAutoFilled(isRefInputAutofilled(emailRef) && isRefInputAutofilled(passwordRef)), 200);
     }, [emailRef, passwordRef]);
 
-    useEffect(() => {
-        // TODO: Causes an error. Need a better way to do this.
-        if (isLoggedIn) {
-            navigate('/');
-        }
-    }, [navigate, isLoggedIn]);
+    if (isLoggedIn) {
+        return <Navigate to='/' />;
+    }
 
     return (
         <div className="Login">
@@ -79,12 +75,9 @@ const Login = () => {
                     </Form.Group>
                 </div>
                 <div className="d-grid gap-2 py-3">
-                    <Button size="lg" type="submit" disabled={isAuthBusy || !validateForm()}>
-                        {isAuthBusy
-                            ? <><span className="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span> Please wait...</>
-                            : <>Login</>
-                        }
-                    </Button>
+                    <LoaderButton size="lg" type="submit" isLoading={isAuthBusy} disabled={!validateForm()}>
+                        Login
+                    </LoaderButton>
                 </div>
             </Form>
         </div>

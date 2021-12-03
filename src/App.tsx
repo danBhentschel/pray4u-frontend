@@ -7,13 +7,14 @@ import { LinkContainer } from "react-router-bootstrap";
 import { useAppDispatch, useAppSelector } from "./app/hooks";
 import { logout, selectIsAuthKnown, selectIsLoggedIn, setLoggedIn } from "./features/auth/authSlice";
 import { Auth } from "aws-amplify";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
+import { onError } from "./lib/errorLib";
 
 const App = () => {
   const isLoggedIn = useAppSelector(selectIsLoggedIn);
   const isAuthKnown = useAppSelector(selectIsAuthKnown);
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = async () => {
     await Auth.signOut();
@@ -27,23 +28,19 @@ const App = () => {
         dispatch(setLoggedIn());
       } catch (e) {
         if (e !== 'No current user') {
-          // TODO: Handle this error properly
-          alert(e);
+          onError(e);
         }
         dispatch(logout());
       }
     })();
   }, [dispatch]);
 
-  useEffect(() => {
-    // TODO: Causes an error. Need a better way to do this.
-    if (!isLoggedIn) {
-      navigate('/login');
-    }
-  }, [navigate, isLoggedIn]);
+  if (!isLoggedIn && location.pathname !== '/signup' && location.pathname !== '/login') {
+    return <Navigate to='/login' />;
+  }
 
-  return (
-    isAuthKnown && (
+  if (isAuthKnown) {
+    return (
       <div className="App container py-3">
         <Navbar collapseOnSelect bg="light" expand="md" className="mb-3">
           <LinkContainer to="/">
@@ -72,8 +69,10 @@ const App = () => {
         </Navbar>
         <AppRoutes />
       </div>
-    )
-  );
+    );
+  }
+
+  return <></>;
 }
 
 export default App;
