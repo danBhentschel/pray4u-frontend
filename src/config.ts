@@ -1,18 +1,17 @@
 const config = {
-    // Backend config
     s3: {
         REGION: 'us-east-1',
-        BUCKET: 'pray4u-backend-dev-textbucket-8z2y9xqgy1q8',
+        BUCKET: 'pray4u-backend-dev-textbucket-iekn0pcqt1l7',
     },
     apiGateway: {
         REGION: 'us-east-1',
-        URL: 'https://qobueyluhc.execute-api.us-east-1.amazonaws.com/dev',
+        URL: 'https://api.dev.pray4u.org/dev',
     },
     cognito: {
         REGION: 'us-east-1',
-        USER_POOL_ID: 'us-east-1_HqMx1CWjI',
-        APP_CLIENT_ID: '68fsrett0s6oqkjin5lspp37p9',
-        IDENTITY_POOL_ID: 'us-east-1:af8eef97-4227-4648-aecf-393570cf0ae0',
+        USER_POOL_ID: 'us-east-1_Js4fg6DMp',
+        APP_CLIENT_ID: '2b6700e296kjtscnqojbvf6ijr',
+        IDENTITY_POOL_ID: 'us-east-1:ad98566b-ef85-4b25-acf6-405a26aafbf2',
     },
 };
 

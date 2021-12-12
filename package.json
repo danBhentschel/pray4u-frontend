@@ -44,5 +44,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "serverless": "^3.0.0-pre.cc390efb"
   }
 }

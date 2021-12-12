@@ -1,0 +1,49 @@
+service: pray4u-frontend
+
+frameworkVersion: ^3
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  s3:
+    siteBucketName: pray4u-${self:custom.stage}-deploy-site-bucket
+
+provider:
+  name: aws
+  region: us-east-1
+  stage: prod
+
+resources:
+  Resources:
+    SiteBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.s3.siteBucketName}
+        PublicAccessBlockConfiguration:
+          BlockPublicPolicy: false
+          RestrictPublicBuckets: false
+        WebsiteConfiguration:
+          IndexDocument: index.html
+          ErrorDocument: index.html
+    BucketPolicySiteBucket:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        PolicyDocument:
+          Statement:
+            - Sid: PublicReadForGetBucketObjects
+              Effect: Allow
+              Principal: '*'
+              Action:
+                - s3:GetObject
+              Resource: arn:aws:s3:::${self:custom.s3.siteBucketName}/*
+        Bucket:
+          Ref: SiteBucket
+
+  Outputs:
+    SiteBucketName:
+      Value:
+        Ref: SiteBucket
+    SiteUrl:
+      Value:
+        'Fn::GetAtt':
+          - SiteBucket
+          - WebsiteURL
