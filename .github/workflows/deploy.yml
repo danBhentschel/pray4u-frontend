@@ -72,6 +72,8 @@ jobs:
       working-directory: ${{ github.workspace }}/backend_repo
       env:
         SERVERLESS_STAGE: cypress
+        COGNITO_USERNAME: ${{ secrets.TEST_USERNAME }}
+        COGNITO_PASSWORD: ${{ secrets.TEST_PASSWORD }}
 
     - name: Delete test user
       if: always()
