@@ -99,7 +99,7 @@ jobs:
 
     - name: Frontend serverless remove cypress
       if: always()
-      run: npx serverless remove --stage cypress
+      run: ./scripts/undeploy.sh cypress
       working-directory: ${{ github.workspace }}/frontend_repo
 
     - name: Backend serverless remove cypress
