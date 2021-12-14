@@ -17,9 +17,6 @@ jobs:
         node-versions: [14.x]
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
@@ -35,8 +32,14 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 
-    - name: yarn install
+    - name: Clone frontend
+      uses: actions/checkout@v2
+      with:
+        path: ${{ github.workspace }}/frontend_repo
+
+    - name: yarn install frontend
       run: npx yarn install --frozen-lockfile
+      working-directory: ${{ github.workspace }}/frontend_repo
 
     - name: Clone backend
       uses: actions/checkout@v2
@@ -54,10 +57,12 @@ jobs:
 
     - name: Frontend serverless deploy to cypress
       run: ./scripts/deploy.sh cypress
+      working-directory: ${{ github.workspace }}/frontend_repo
 
     - name: Delete test user
       continue-on-error: true
       run: ./integration/delete_test_user.sh
+      working-directory: ${{ github.workspace }}/backend_repo
       env:
         SERVERLESS_STAGE: cypress
         COGNITO_USERNAME: ${{ secrets.TEST_USERNAME }}
@@ -70,6 +75,7 @@ jobs:
 
     - name: Run cypress tests
       run: npx cypress run
+      working-directory: ${{ github.workspace }}/frontend_repo
       env:
         CYPRESS_SERVERLESS_STAGE: cypress
         CYPRESS_COGNITO_USERNAME: ${{ secrets.TEST_USERNAME }}
@@ -78,14 +84,16 @@ jobs:
     - name: Frontend serverless remove cypress
       if: always()
       run: npx serverless remove --stage cypress
+      working-directory: ${{ github.workspace }}/frontend_repo
 
     - name: Backend serverless remove cypress
       if: always()
       run: npx serverless remove --stage cypress
       working-directory: ${{ github.workspace }}/backend_repo
 
-    - name: Deploy to staging
+    - name: Frontend serverless deploy to staging
       run: ./scripts/deploy.sh staging
+      working-directory: ${{ github.workspace }}/frontend_repo
 
 
     
