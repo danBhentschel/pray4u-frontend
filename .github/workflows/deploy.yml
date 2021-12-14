@@ -59,19 +59,27 @@ jobs:
       run: ./scripts/deploy.sh cypress
       working-directory: ${{ github.workspace }}/frontend_repo
 
-    - name: Delete test user
-      continue-on-error: true
-      run: ./integration/delete_test_user.sh
+    - name: Create test user
+      run: ./integration/create_test_user.sh
       working-directory: ${{ github.workspace }}/backend_repo
       env:
         SERVERLESS_STAGE: cypress
         COGNITO_USERNAME: ${{ secrets.TEST_USERNAME }}
+        COGNITO_PASSWORD: ${{ secrets.TEST_PASSWORD }}
 
     - name: Wait for API Gateway
       run: npx ts-node integration/wait_for_api_to_be_ready.ts
       working-directory: ${{ github.workspace }}/backend_repo
       env:
         SERVERLESS_STAGE: cypress
+
+    - name: Delete test user
+      if: always()
+      run: ./integration/delete_test_user.sh
+      working-directory: ${{ github.workspace }}/backend_repo
+      env:
+        SERVERLESS_STAGE: cypress
+        COGNITO_USERNAME: ${{ secrets.TEST_USERNAME }}
 
     - name: Run cypress tests
       run: npx cypress run
@@ -80,6 +88,14 @@ jobs:
         CYPRESS_SERVERLESS_STAGE: cypress
         CYPRESS_COGNITO_USERNAME: ${{ secrets.TEST_USERNAME }}
         CYPRESS_COGNITO_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+
+    - name: Delete test user
+      if: always()
+      run: ./integration/delete_test_user.sh
+      working-directory: ${{ github.workspace }}/backend_repo
+      env:
+        SERVERLESS_STAGE: cypress
+        COGNITO_USERNAME: ${{ secrets.TEST_USERNAME }}
 
     - name: Frontend serverless remove cypress
       if: always()
