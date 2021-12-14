@@ -39,6 +39,7 @@ const App = () => {
     }
   }, [dispatch, isAuthKnown]);
 
+  console.warn(location.pathname);
   if (!isLoggedIn && location.pathname !== '/signup' && location.pathname !== '/login') {
     return <Navigate to='/login' />;
   }

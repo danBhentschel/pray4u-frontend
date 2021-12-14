@@ -27,6 +27,9 @@ jobs:
         role-to-assume: arn:aws:iam::354178563115:role/Pray4uFrontendGithubActions
         role-session-name: Pray4uFrontendGithubDeploy
 
+    - name: Install cypress dependencies
+      run: sudo apt-get install libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
@@ -35,5 +38,54 @@ jobs:
     - name: yarn install
       run: npx yarn install --frozen-lockfile
 
+    - name: Clone backend
+      uses: actions/checkout@v2
+      with:
+        repository: danBhentschel/pray4u-backend
+        path: ${{ github.workspace }}/backend_repo
+
+    - name: yarn install backend
+      run: npx yarn install --frozen-lockfile
+      working-directory: ${{ github.workspace }}/backend_repo
+
+    - name: Backend serverless deploy to cypress
+      run: npx serverless deploy --stage cypress
+      working-directory: ${{ github.workspace }}/backend_repo
+
+    - name: Frontend serverless deploy to cypress
+      run: ./scripts/deploy.sh cypress
+
+    - name: Delete test user
+      continue-on-error: true
+      run: ./integration/delete_test_user.sh
+      env:
+        SERVERLESS_STAGE: cypress
+        COGNITO_USERNAME: ${{ secrets.TEST_USERNAME }}
+
+    - name: Wait for API Gateway
+      run: npx ts-node integration/wait_for_api_to_be_ready.ts
+      working-directory: ${{ github.workspace }}/backend_repo
+      env:
+        SERVERLESS_STAGE: cypress
+
+    - name: Run cypress tests
+      run: npx cypress run
+      env:
+        CYPRESS_SERVERLESS_STAGE: cypress
+        CYPRESS_COGNITO_USERNAME: ${{ secrets.TEST_USERNAME }}
+        CYPRESS_COGNITO_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+
+    - name: Frontend serverless remove cypress
+      if: always()
+      run: npx serverless remove --stage cypress
+
+    - name: Backend serverless remove cypress
+      if: always()
+      run: npx serverless remove --stage cypress
+      working-directory: ${{ github.workspace }}/backend_repo
+
     - name: Deploy to staging
       run: ./scripts/deploy.sh staging
+
+
+    
