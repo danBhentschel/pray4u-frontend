@@ -5,6 +5,7 @@ cy.VerificationCode = {
         return cy.request({
             url: s3Obj,
             encoding: 'ascii',
+            failOnStatusCode: false,
         }).then((response) => {
             if (response.status !== 200) {
                 return '';
