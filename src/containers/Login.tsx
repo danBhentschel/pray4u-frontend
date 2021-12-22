@@ -2,7 +2,7 @@ import { useState, useEffect, FormEvent, createRef, ChangeEvent, RefObject } fro
 import Form from "react-bootstrap/Form";
 import "./Login.css";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
-import { performLogin, selectIsAuthBusy, selectIsLoggedIn } from "../features/auth/authSlice";
+import { performGoogleLogin, performLogin, selectIsAuthBusy, selectIsLoggedIn } from "../features/auth/authSlice";
 import LoaderButton from "../components/LoaderButton";
 import { Navigate } from "react-router-dom";
 import { useFormFields } from "../lib/hooksLib";
@@ -37,10 +37,41 @@ const Login = () => {
         setAutoFilled(false);
     };
 
+    const googleSignIn = () => {
+        dispatch(performGoogleLogin());
+    }
+
     useEffect(() => {
         const isRefInputAutofilled = (ref: RefObject<HTMLInputElement>): boolean =>
             !!ref && !!ref.current && ref.current.matches(':-internal-autofill-selected');
         setTimeout(() => setAutoFilled(isRefInputAutofilled(emailRef) && isRefInputAutofilled(passwordRef)), 200);
+
+        const createScript = () => {
+            // load the Google SDK
+            const script = document.createElement('script');
+            script.src = 'https://apis.google.com/js/platform.js';
+            script.async = true;
+            script.onload = initGapi;
+            document.body.appendChild(script);
+        }
+
+        const initGapi = () => {
+            // init the Google SDK client
+            const g = window.gapi;
+            g.load('auth2', function () {
+                g.auth2.init({
+                    client_id: '344279965332-4cma6kuef2essduetjc4mb19dpr5663b.apps.googleusercontent.com',
+                    // authorized scopes
+                    scope: 'profile email openid'
+                });
+            });
+        }
+
+        const ga = window.gapi && window.gapi.auth2 ?
+            window.gapi.auth2.getAuthInstance() :
+            null;
+
+        if (!ga) createScript();
     }, [emailRef, passwordRef]);
 
     if (isLoggedIn) {
@@ -81,6 +112,9 @@ const Login = () => {
                     </LoaderButton>
                 </div>
             </Form>
+            <div>
+                <button onClick={googleSignIn}>Sign in with Google</button>
+            </div>
         </div>
     );
 };

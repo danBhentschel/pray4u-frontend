@@ -27,6 +27,27 @@ export const performLogin = createAsyncThunk(
     },
 );
 
+export const performGoogleLogin = createAsyncThunk(
+    'auth/performGoogleLogin',
+    async (): Promise<boolean> => {
+        const ga = window.gapi.auth2.getAuthInstance();
+        const googleUser = await ga.signIn();
+
+        const { id_token, expires_at } = googleUser.getAuthResponse();
+        const profile = googleUser.getBasicProfile();
+        let user = {
+            email: profile.getEmail(),
+            name: profile.getName()
+        };
+        
+        await Auth.federatedSignIn(
+            'google',
+            { token: id_token, expires_at },
+            user
+        );
+        return true;
+    },
+);
 
 export const authSlice = createSlice({
     name: 'auth',
@@ -52,6 +73,19 @@ export const authSlice = createSlice({
                 state.value = action.payload ? 'loggedIn' : 'notLoggedIn';
             })
             .addCase(performLogin.rejected, (state, action) => {
+                state.value = 'notLoggedIn';
+                state.status = 'failed';
+                state.error = action.error;
+            })
+            .addCase(performGoogleLogin.pending, (state) => {
+                state.value = 'notLoggedIn';
+                state.status = 'loading';
+            })
+            .addCase(performGoogleLogin.fulfilled, (state, action) => {
+                state.status = action.payload ? 'idle' : 'failed';
+                state.value = action.payload ? 'loggedIn' : 'notLoggedIn';
+            })
+            .addCase(performGoogleLogin.rejected, (state, action) => {
                 state.value = 'notLoggedIn';
                 state.status = 'failed';
                 state.error = action.error;
