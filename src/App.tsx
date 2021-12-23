@@ -5,42 +5,28 @@ import "./App.css";
 import AppRoutes from "./Routes";
 import { LinkContainer } from "react-router-bootstrap";
 import { useAppDispatch, useAppSelector } from "./app/hooks";
-import { logout, selectIsAuthKnown, selectIsLoggedIn, setLoggedIn } from "./features/auth/authSlice";
-import { Auth } from "aws-amplify";
+import { checkLoggedIn, logout, selectAuthProvider, selectIsAuthBusy, selectIsAuthKnown, selectIsLoggedIn } from "./features/auth/authSlice";
 import { Navigate, useLocation } from "react-router-dom";
-import { onError } from "./lib/errorLib";
 
 const App = () => {
   const isLoggedIn = useAppSelector(selectIsLoggedIn);
   const isAuthKnown = useAppSelector(selectIsAuthKnown);
+  const isAuthBusy = useAppSelector(selectIsAuthBusy);
+  const authProvider = useAppSelector(selectAuthProvider);
   const dispatch = useAppDispatch();
   const location = useLocation();
 
   const handleLogout = async () => {
-    await Auth.signOut();
-    dispatch(logout());
+    dispatch(logout(authProvider));
   }
 
   useEffect(() => {
-    const tryGetAuthFromSession = async () => {
-      try {
-        await Auth.currentSession();
-        dispatch(setLoggedIn());
-      } catch (e) {
-        if (e !== 'No current user') {
-          onError(e);
-        }
-        dispatch(logout());
-      }
-    };
-
     if (!isAuthKnown) {
-      tryGetAuthFromSession();
+      dispatch(checkLoggedIn());
     }
   }, [dispatch, isAuthKnown]);
 
-  console.warn(location.pathname);
-  if (!isLoggedIn && location.pathname !== '/signup' && location.pathname !== '/login') {
+  if (isAuthKnown && !isAuthBusy && !isLoggedIn && location.pathname !== '/signup' && location.pathname !== '/login') {
     return <Navigate to='/login' />;
   }
 
