@@ -90,6 +90,7 @@ jobs:
         CYPRESS_SERVERLESS_STAGE: cypress
         CYPRESS_COGNITO_USERNAME: ${{ secrets.TEST_USERNAME }}
         CYPRESS_COGNITO_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+        DEBUG: "cypress:*"
 
     - name: Delete test user
       if: always()
