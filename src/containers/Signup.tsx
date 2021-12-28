@@ -3,12 +3,12 @@ import { ChangeEvent, useState } from "react";
 import Form from "react-bootstrap/Form";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import LoaderButton from "../components/LoaderButton";
-import { performLogin, selectIsAuthBusy, selectIsLoggedIn } from "../features/auth/authSlice";
+import { performLogin, selectIsAuthBusy } from "../features/auth/authSlice";
 import { onError } from "../lib/errorLib";
 import { useFormFields } from "../lib/hooksLib";
 import { ISignUpResult } from "amazon-cognito-identity-js";
 import "./Signup.css";
-import { Navigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Signup = () => {
     const [fields, handleFieldChange] = useFormFields({
@@ -21,7 +21,9 @@ const Signup = () => {
     const [isLoading, setIsLoading] = useState(false);
     const dispatch = useAppDispatch();
     const isAuthBusy = useAppSelector(selectIsAuthBusy);
-    const isLoggedIn = useAppSelector(selectIsLoggedIn);
+    const navigate = useNavigate();
+    const location = useLocation();
+    const from = location.state?.from?.pathname || '/';
 
     const validateForm = () => {
         return (
@@ -63,6 +65,7 @@ const Signup = () => {
             dispatch(performLogin({
                 email: fields.email,
                 password: fields.password,
+                next: () => navigate(from, { replace: true })
             }));
         } catch (e) {
             onError(e);
@@ -143,10 +146,6 @@ const Signup = () => {
                 </div>
             </Form>
         );
-    }
-
-    if (isLoggedIn) {
-        return <Navigate to='/' />;
     }
 
     return (

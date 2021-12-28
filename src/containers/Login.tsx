@@ -2,10 +2,10 @@ import { useState, useEffect, FormEvent, createRef, ChangeEvent, RefObject } fro
 import Form from "react-bootstrap/Form";
 import "./Login.css";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
-import { performGoogleLogin, performLogin, selectIsAuthBusy, selectIsAuthKnown, selectIsLoggedIn } from "../features/auth/authSlice";
+import { performGoogleLogin, performLogin, selectIsAuthBusy } from "../features/auth/authSlice";
 import LoaderButton from "../components/LoaderButton";
-import { Navigate } from "react-router-dom";
 import { useFormFields } from "../lib/hooksLib";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Login = () => {
     const [fields, handleFieldChange] = useFormFields({
@@ -14,11 +14,12 @@ const Login = () => {
     });
     const [isAutoFilled, setAutoFilled] = useState(false);
     const dispatch = useAppDispatch();
-    const isAuthKnown = useAppSelector(selectIsAuthKnown);
     const isAuthBusy = useAppSelector(selectIsAuthBusy);
-    const isLoggedIn = useAppSelector(selectIsLoggedIn);
     const emailRef = createRef<HTMLInputElement>();
     const passwordRef = createRef<HTMLInputElement>();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const from = location.state?.from?.pathname || '/';
 
     const validateForm = () => {
         return isAutoFilled || (fields.email.length > 0 && fields.password.length > 0);
@@ -30,6 +31,7 @@ const Login = () => {
         dispatch(performLogin({
             email: fields.email,
             password: fields.password,
+            next: () => navigate(from, { replace: true })
         }));
     };
 
@@ -39,7 +41,7 @@ const Login = () => {
     };
 
     const googleSignIn = () => {
-        dispatch(performGoogleLogin());
+        dispatch(performGoogleLogin(() => navigate(from, { replace: true })));
     }
 
     useEffect(() => {
@@ -47,10 +49,6 @@ const Login = () => {
             !!ref && !!ref.current && ref.current.matches(':-internal-autofill-selected');
         setTimeout(() => setAutoFilled(isRefInputAutofilled(emailRef) && isRefInputAutofilled(passwordRef)), 200);
     }, [emailRef, passwordRef]);
-
-    if (isAuthKnown && !isAuthBusy && isLoggedIn) {
-        return <Navigate to='/' />;
-    }
 
     return (
         <div className="Login">

@@ -12,9 +12,10 @@ export interface AuthState {
     error: SerializedError | null;
 }
 
-export interface AuthCredentials {
+export interface LoginParameters {
     email: string;
     password: string;
+    next: () => void;
 }
 
 const initialState: AuthState = {
@@ -26,16 +27,18 @@ const initialState: AuthState = {
 
 export const performLogin = createAsyncThunk(
     'auth/performLogin',
-    async (credentials: AuthCredentials): Promise<boolean> => {
-        await Auth.signIn(credentials.email, credentials.password);
+    async (parameters: LoginParameters): Promise<boolean> => {
+        await Auth.signIn(parameters.email, parameters.password);
+        parameters.next();
         return true;
     },
 );
 
 export const performGoogleLogin = createAsyncThunk(
     'auth/performGoogleLogin',
-    async (): Promise<boolean> => {
+    async (next: () => void): Promise<boolean> => {
         await loginToGoogle();
+        next();
         return true;
     },
 );

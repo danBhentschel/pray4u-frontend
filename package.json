@@ -52,5 +52,8 @@
     "cypress": "^9.1.1",
     "serverless": "^3.0.0-pre.cc390efb",
     "uuid": "^8.3.2"
+  },
+  "resolutions": {
+    "react-scripts/eslint-webpack-plugin": "2.3.0"
   }
 }
