@@ -123,73 +123,75 @@ export const authSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(checkLoggedIn.pending, (state) => {
-                state.value = 'notLoggedIn';
                 state.status = 'loading';
+                state.value = 'notLoggedIn';
             })
             .addCase(checkLoggedIn.fulfilled, (state, action) => {
-                state.status = 'idle';
                 state.value = action.payload === 'none' ? 'notLoggedIn' : 'loggedIn';
                 state.provider = action.payload;
+                state.status = 'idle';
             })
             .addCase(checkLoggedIn.rejected, (state, action) => {
                 state.value = 'notLoggedIn';
-                state.status = 'failed';
                 state.error = action.error;
+                state.status = 'failed';
             })
             .addCase(logout.pending, (state) => {
-                state.value = 'notLoggedIn';
                 state.status = 'loading';
+                state.value = 'notLoggedIn';
                 state.provider = 'none';
             })
             .addCase(logout.fulfilled, (state, action) => {
-                state.status = 'idle';
                 state.value = 'notLoggedIn';
                 state.provider = 'none';
+                state.status = 'idle';
             })
             .addCase(logout.rejected, (state, action) => {
                 state.value = 'notLoggedIn';
-                state.status = 'failed';
                 state.provider = 'none';
                 state.error = action.error;
+                state.status = 'failed';
             })
             .addCase(performLogin.pending, (state) => {
-                state.value = 'notLoggedIn';
                 state.status = 'loading';
+                state.value = 'notLoggedIn';
                 state.provider = 'none';
             })
             .addCase(performLogin.fulfilled, (state, action) => {
-                state.status = action.payload ? 'idle' : 'failed';
                 state.value = action.payload ? 'loggedIn' : 'notLoggedIn';
                 state.provider = 'cognito';
+                state.status = action.payload ? 'idle' : 'failed';
             })
             .addCase(performLogin.rejected, (state, action) => {
                 state.value = 'notLoggedIn';
-                state.status = 'failed';
                 state.provider = 'none';
                 state.error = action.error;
+                state.status = 'failed';
             })
             .addCase(performGoogleLogin.pending, (state) => {
-                state.value = 'notLoggedIn';
                 state.status = 'loading';
+                state.value = 'notLoggedIn';
                 state.provider = 'none';
             })
             .addCase(performGoogleLogin.fulfilled, (state, action) => {
-                state.status = action.payload ? 'idle' : 'failed';
                 state.value = action.payload ? 'loggedIn' : 'notLoggedIn';
                 state.provider = 'google';
+                state.status = action.payload ? 'idle' : 'failed';
             })
             .addCase(performGoogleLogin.rejected, (state, action) => {
                 state.value = 'notLoggedIn';
-                state.status = 'failed';
                 state.provider = 'none';
                 state.error = action.error;
-            })
+                state.status = 'failed';
+            });
     }
 });
 
 export const selectIsLoggedIn = (state: RootState): boolean => state.auth.value === 'loggedIn';
 export const selectIsAuthBusy = (state: RootState): boolean => state.auth.status === 'loading';
-export const selectIsAuthKnown = (state: RootState): boolean => state.auth.status !== 'unknown';
+export const selectIsAuthKnown = (state: RootState): boolean => {
+    return state.auth.status !== 'unknown' && state.auth.status !== 'loading';
+};
 
 export const selectAuthProvider = (state: RootState): AuthProvider => state.auth.provider;
 

@@ -5,11 +5,12 @@ import "./App.css";
 import AppRoutes from "./Routes";
 import { LinkContainer } from "react-router-bootstrap";
 import { useAppDispatch, useAppSelector } from "./app/hooks";
-import { checkLoggedIn, logout, selectAuthProvider, selectIsAuthKnown, selectIsLoggedIn } from "./features/auth/authSlice";
+import { checkLoggedIn, logout, selectAuthProvider, selectIsAuthBusy, selectIsAuthKnown, selectIsLoggedIn } from "./features/auth/authSlice";
 
 const App = () => {
   const isLoggedIn = useAppSelector(selectIsLoggedIn);
   const isAuthKnown = useAppSelector(selectIsAuthKnown);
+  const isAuthBusy = useAppSelector(selectIsAuthBusy);
   const authProvider = useAppSelector(selectAuthProvider);
   const dispatch = useAppDispatch();
 
@@ -18,10 +19,10 @@ const App = () => {
   }
 
   useEffect(() => {
-    if (!isAuthKnown) {
+    if (!isAuthKnown && !isAuthBusy) {
       dispatch(checkLoggedIn());
     }
-  }, [dispatch, isAuthKnown]);
+  }, [dispatch, isAuthKnown, isAuthBusy]);
 
   if (isAuthKnown) {
     return (

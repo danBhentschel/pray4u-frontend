@@ -1,7 +1,7 @@
 const config = {
     s3: {
         REGION: 'us-east-1',
-        BUCKET: 'pray4u-backend-cypress-textbucket-zdke09iq8n8l',
+        BUCKET: 'pray4u-backend-cypress-textbucket-h12cuvik1qzy',
     },
     apiGateway: {
         REGION: 'us-east-1',
@@ -9,9 +9,9 @@ const config = {
     },
     cognito: {
         REGION: 'us-east-1',
-        USER_POOL_ID: 'us-east-1_9p83ZsmZ5',
-        APP_CLIENT_ID: '17sd2semsh1m2fn2hmq09uc2u9',
-        IDENTITY_POOL_ID: 'us-east-1:a2f08850-2ec5-4e62-b1bb-e01e4449f8a7',
+        USER_POOL_ID: 'us-east-1_flNREombi',
+        APP_CLIENT_ID: '3dp29q2avd9s88dh9fh8kd87pg',
+        IDENTITY_POOL_ID: 'us-east-1:0c1e697e-8a21-4f29-a794-53974f167280',
     },
 };
 
