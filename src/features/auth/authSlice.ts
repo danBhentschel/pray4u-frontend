@@ -79,7 +79,7 @@ export const checkLoggedIn = createAsyncThunk(
         await new Promise((resolve) => {
             gapi.load('auth2', () => {
                 gapi.auth2.init({
-                    client_id: '344279965332-4cma6kuef2essduetjc4mb19dpr5663b.apps.googleusercontent.com',
+                    client_id: '344279965332-tuth4qcjhn48j2oaic4gngd9cnahjtqf.apps.googleusercontent.com',
                     // authorized scopes
                     scope: 'profile email openid'
                 }).then((googleAuth) => resolve(googleAuth));
